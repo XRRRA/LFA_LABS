@@ -33,27 +33,36 @@ class Grammar:
     def to_finite_automaton(self):
         finite_automaton = FiniteAutomaton()
 
-        # Adding states
         finite_automaton.Q = self.VN.union(self.VT)
-
-        # Adding alphabet
         finite_automaton.Sigma = self.VT
+        finite_automaton.delta = set()
 
-        # Adding transitions
         for non_terminal, productions in self.P.items():
             for production in productions:
                 if len(production) > 1:
                     current_state = production[0]
                     next_state = production[1]
-                    finite_automaton.delta.setdefault((non_terminal, current_state), set()).add(next_state)
+                    finite_automaton.delta.add((non_terminal, current_state, next_state))
+                else:
+                    # Handle terminal elements
+                    if non_terminal in finite_automaton.F:
+                        finite_automaton.delta.add((non_terminal, production, 'X'))
+                    else:
+                        # Update terminal values
+                        if production == 'b':
+                            finite_automaton.delta.add((non_terminal, production, 'X'))
+                        elif production == 'd':
+                            finite_automaton.delta.add((non_terminal, production, 'X'))
+                        else:
+                            finite_automaton.delta.add((non_terminal, production, production))
 
-        # Adding initial state
         finite_automaton.q0 = 'S'
-
-        # Adding accepting states
-        finite_automaton.F = {'S'}
+        finite_automaton.F = {'X'}
 
         return finite_automaton
+
+
+
 
 
 
