@@ -1,3 +1,4 @@
+# grammar.py
 import random
 
 from finite_automaton import FiniteAutomaton
@@ -5,13 +6,9 @@ from finite_automaton import FiniteAutomaton
 
 class Grammar:
     def __init__(self):
-        self.VN = {'S', 'B', 'D'}
-        self.VT = {'a', 'b', 'c', 'd'}
-        self.P = {
-            'S': ['aS', 'bB'],
-            'B': ['cB', 'd', 'aD'],
-            'D': ['aB', 'b']
-        }
+        self.VN = set()
+        self.VT = set()
+        self.P = {}
 
     def generate_string(self):
         generated_strings = []
@@ -61,12 +58,23 @@ class Grammar:
 
         return finite_automaton
 
-
-
-
-
-
-
-
-
-
+    def check_grammar_type(self):
+        start_symbol = None
+        has_epsilon = False
+        for non_terminal, productions in self.P.items():
+            if not start_symbol:
+                start_symbol = non_terminal
+            for production in productions:
+                if 'ε' in production:
+                    has_epsilon = True
+                if len(production) > 2:
+                    return "Type-0 (Unrestricted)"
+                if len(production) == 2:
+                    if production[0] in self.VN and production[1] in self.VT:
+                        return "Type-1 (Context-Sensitive)"
+                if len(production) == 1:
+                    if production[0] in self.VT:
+                        return "Type-3 (Regular)"
+        if start_symbol and not has_epsilon:
+            return "Type-2 (Context-Free)"
+        return "Type-0 (Unrestricted)"
