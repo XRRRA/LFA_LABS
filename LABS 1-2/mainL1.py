@@ -1,4 +1,3 @@
-# Import the Grammar and FiniteAutomaton classes from your module
 from grammar import Grammar
 
 grammar = Grammar()
