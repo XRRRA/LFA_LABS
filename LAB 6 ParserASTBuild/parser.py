@@ -22,21 +22,49 @@ class Parser:
         raise Exception('Invalid syntax')
 
     def parse(self):
-        if self.current_token.type == TokenType.EOF:
-            return None
+        return self.expression()
 
-        left = self.term()
+    def expression(self):
+        """ Parse an expression. """
+        return self.addition()
+
+    def addition(self):
+        """ Handle addition and subtraction. """
+        result = self.term()
+
         while self.current_token.type in (TokenType.PLUS, TokenType.MINUS):
             op = self.current_token
             self.advance()
             right = self.term()
-            left = BinOp(left=left, op=op, right=right)
-        return left
+            result = BinOp(left=result, op=op, right=right)
+
+        return result
 
     def term(self):
+        """ Handle multiplication and division. """
+        result = self.factor()
+
+        while self.current_token.type in (TokenType.TIMES, TokenType.DIVIDE):
+            op = self.current_token
+            self.advance()
+            right = self.factor()
+            result = BinOp(left=result, op=op, right=right)
+
+        return result
+
+    def factor(self):
+        """ Handle parentheses and numbers. """
         token = self.current_token
+
         if token.type == TokenType.INTEGER:
             self.advance()
             return Num(token)
+        elif token.type == TokenType.LPAREN:
+            self.advance()
+            result = self.expression()
+            if self.current_token.type != TokenType.RPAREN:
+                self.error()
+            self.advance()
+            return result
         else:
             self.error()

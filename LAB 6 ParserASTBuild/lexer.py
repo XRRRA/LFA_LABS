@@ -14,15 +14,17 @@ class Lexer:
         raise Exception('Invalid character')
 
     def tokenize(self):
-        # Regular expressions for tokens
         token_specification = [
             (TokenType.INTEGER, r'\d+'),
             (TokenType.PLUS, r'\+'),
             (TokenType.MINUS, r'\-'),
+            (TokenType.TIMES, r'\*'),
+            (TokenType.DIVIDE, r'\/'),
+            (TokenType.LPAREN, r'\('),
+            (TokenType.RPAREN, r'\)'),
             (TokenType.EOF, r'\Z')
         ]
 
-        # Create a regex that matches the token specifications
         token_regex = '|'.join(f'(?P<{tok.name}>{pattern})' for tok, pattern in token_specification)
         for mo in re.finditer(token_regex, self.text):
             kind = mo.lastgroup
