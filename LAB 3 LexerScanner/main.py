@@ -17,13 +17,13 @@ class Lexer:
             char = self.input_text[self.current_pos]
 
             if char.isspace():
-                self.current_pos += 1  # Skip whitespace
+                self.current_pos += 1
 
-            elif re.match(r'[0-9]', char):  # Numeric literal
+            elif re.match(r'[0-9]', char):
                 number = self._read_number()
                 self.tokens.append(('NUMBER', number))
 
-            elif re.match(r'[a-zA-Z]', char):  # Identifier or keyword
+            elif re.match(r'[a-zA-Z]', char):
                 word = self._read_word()
                 if word in self.keywords:
                     self.tokens.append(('KEYWORD', word))
@@ -59,7 +59,7 @@ class Lexer:
     def _read_word(self):
         word = ''
         while self.current_pos < len(self.input_text) and \
-              self.input_text[self.current_pos].isalnum():  # Check for alphanumeric
+              self.input_text[self.current_pos].isalnum():
             word += self.input_text[self.current_pos]
             self.current_pos += 1
         return word
