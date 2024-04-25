@@ -1,83 +1,35 @@
-import re
+from my_token import Token
 from token_type import TokenType
+import re
 
 
 class Lexer:
-    def __init__(self, input_text):
-        self.input_text = input_text
+    def __init__(self, text):
+        self.text = text
+        self.pos = 0
+        self.current_token = None
         self.tokens = []
-        self.current_pos = 0
 
-        # Define keywords, operators, identifiers, etc.
-        self.keywords = {'if', 'else', 'while', 'for', 'int', 'float'}
-        self.operators = {'+', '-', '*', '/', '=', '<', '>', '==', ':'}
-        self.delimiters = {';', '(', ')', '{', '}', ',', "'"}
+    def error(self):
+        raise Exception('Invalid character')
 
     def tokenize(self):
-        while self.current_pos < len(self.input_text):
-            char = self.input_text[self.current_pos]
+        # Regular expressions for tokens
+        token_specification = [
+            (TokenType.INTEGER, r'\d+'),
+            (TokenType.PLUS, r'\+'),
+            (TokenType.MINUS, r'\-'),
+            (TokenType.EOF, r'\Z')
+        ]
 
-            if char.isspace():
-                self.current_pos += 1
+        # Create a regex that matches the token specifications
+        token_regex = '|'.join(f'(?P<{tok.name}>{pattern})' for tok, pattern in token_specification)
+        for mo in re.finditer(token_regex, self.text):
+            kind = mo.lastgroup
+            value = mo.group()
+            tok_type = TokenType[kind]
+            if tok_type == TokenType.INTEGER:
+                value = int(value)  # Convert to integer
+            self.tokens.append(Token(tok_type, value))
 
-            elif re.match(r'[0-9]', char):
-                number = self._read_number()
-                self.tokens.append((TokenType.NUMBER, number))
-
-            elif re.match(r'[a-zA-Z]', char):
-                word = self._read_word()
-                if word in self.keywords:
-                    self.tokens.append((TokenType.KEYWORD, word))
-                else:
-                    self.tokens.append((TokenType.IDENTIFIER, word))
-
-            elif char in self.operators:
-                self.tokens.append((TokenType.OPERATOR, char))
-                self.current_pos += 1
-
-            elif char in self.delimiters:
-                self.tokens.append((TokenType.DELIMITER, char))
-                self.current_pos += 1
-
-            elif char == '"':
-                self.current_pos += 1
-                string_value = self._read_string()
-                self.tokens.append((TokenType.STRING, string_value))
-            elif char == '#':
-                comment = self._read_comment()
-                self.tokens.append((TokenType.COMMENT, comment))
-            else:
-                raise Exception(f"Unknown character: '{char}' at position {self.current_pos}")
-
-    def _read_number(self):
-        number = ''
-        while self.current_pos < len(self.input_text) and \
-                (self.input_text[self.current_pos].isdigit() or self.input_text[self.current_pos] == '.'):
-            number += self.input_text[self.current_pos]
-            self.current_pos += 1
-        return number
-
-    def _read_word(self):
-        word = ''
-        while self.current_pos < len(self.input_text) and \
-              self.input_text[self.current_pos].isalnum():
-            word += self.input_text[self.current_pos]
-            self.current_pos += 1
-        return word
-
-    def _read_string(self):
-        string_value = ''
-        while self.current_pos < len(self.input_text) and self.input_text[self.current_pos] != '"':
-            string_value += self.input_text[self.current_pos]
-            self.current_pos += 1
-        if self.current_pos == len(self.input_text):
-            raise Exception("Unterminated string!")
-        self.current_pos += 1
-        return string_value
-
-    def _read_comment(self):
-        comment = ''
-        while self.current_pos < len(self.input_text) and self.input_text[self.current_pos] != '\n':
-            comment += self.input_text[self.current_pos]
-            self.current_pos += 1
-        return comment
+        self.tokens.append(Token(TokenType.EOF, None))
